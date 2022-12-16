@@ -21,13 +21,15 @@ public class VirtualCoinController {
 	@Autowired
 	private VirtualCoinService virtualCoinService;
 
-	//All DebitCard Registered
+	//All Virtual-coin Registered
 	@GetMapping("/findAllVirtualCoin")
 	public Flux<VirtualCoin> findAllVirtualCoin() {
 		Flux<VirtualCoin> virtualCoinFlux = virtualCoinService.findAllVirtualCoin();
 		LOGGER.info("All virtual coin Registered: " + virtualCoinFlux);
 		return virtualCoinFlux;
 	}
+
+	//Virtual-coin registered  by customer
 
 	@GetMapping("/findAllDebitCardsByCustomer/{dni}")
 	public Mono<VirtualCoin> findAllVirtualCoinByCustomer(@PathVariable("dni") String dni) {
@@ -37,8 +39,7 @@ public class VirtualCoinController {
 	}
 
 
-	//Save Debit Card
-	//@CircuitBreaker(name = "passive", fallbackMethod = "fallBackGetDebitCard")
+	//Save Virtual-coin
 	@PostMapping(value = "/saveVirtualCoin")
 	public Mono<VirtualCoin> saveVirtualCoin(@RequestBody VirtualCoinDto virtualCoinDto){
 
@@ -59,9 +60,8 @@ public class VirtualCoinController {
 	}
 
 
-	//Update main account of debit card
-	//@CircuitBreaker(name = "passive", fallbackMethod = "fallBackGetDebitCard")
-	@PutMapping("/updateBalanceVirtualCoin/{dni}")
+	//Update balance of the Virtual-coin
+	@PutMapping("/updateBalanceVirtualCoin/{dni}/{balance}")
 	public Mono<VirtualCoin> updateBalanceVirtualCoin(@PathVariable("dni") String dni, @PathVariable("balance") Double balance){
 
 		VirtualCoin dataVirtualCoin = new VirtualCoin();
@@ -75,7 +75,8 @@ public class VirtualCoinController {
 		Mono<VirtualCoin> updatePassive = virtualCoinService.updateBalanceVirtualCoin(dataVirtualCoin);
 		return updatePassive;
 	}
-	@PutMapping("/updateBalanceVirtualCoin/{dni}")
+	// update debit card of then Virtual-coin
+	@PutMapping("/updateDebiCardVirtualCoin/{dni}")
 	public Mono<VirtualCoin> updateDebiCardVirtualCoin(@PathVariable("dni") String dni){
 		Boolean flagdebitcard= true;
 		String debicard= "";
@@ -97,9 +98,5 @@ public class VirtualCoinController {
 		return updatePassive;
 	}
 
-	private Mono<VirtualCoin> fallBackGetDebitCard(Exception e){
-		VirtualCoin virtualCoin = new VirtualCoin();
-		Mono<VirtualCoin> staffMono= Mono.just(virtualCoin);
-		return staffMono;
-	}
+
 }
