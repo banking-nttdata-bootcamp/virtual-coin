@@ -1,10 +1,10 @@
 spring:
   application:
-    name: debit-card
+    name: virutal-coin
   config:
-    import: "optional:configserver:http://localhost:7000"
+    #import: "optional:configserver:http://localhost:7000"
     #import: "optional:configserver:http://dknttdata-config-server:7000"
-  #import: "optional:configserver:https://bnttdata-config-server.azurewebsites.net"
+    import: "optional:configserver:https://bnttdata-config-server.azurewebsites.net"
   cloud:
     config:
       enabled: true
