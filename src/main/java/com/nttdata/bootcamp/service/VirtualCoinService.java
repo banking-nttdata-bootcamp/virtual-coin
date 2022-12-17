@@ -7,12 +7,10 @@ import reactor.core.publisher.Mono;
 //Interface Service
 public interface VirtualCoinService {
     Flux<VirtualCoin> findAllVirtualCoin();
-    Mono<VirtualCoin> findAllVirtualCoinByCustomer(String dni);
+    Mono<VirtualCoin> findVirtualCoinByCellNumber(String dni);
 
     Mono<VirtualCoin> saveVirtualCoin(VirtualCoin dataVirtualCoin);
-
-    Mono<VirtualCoin> updateBalanceVirtualCoin(VirtualCoin dataVirtualCoin);
-
+    Mono<VirtualCoin> saveTransactionVirtualCoin(VirtualCoin dataVirtualCoin);
     Mono<VirtualCoin> updateDebiCardVirtualCoin(VirtualCoin dataVirtualCoin);
 
 }

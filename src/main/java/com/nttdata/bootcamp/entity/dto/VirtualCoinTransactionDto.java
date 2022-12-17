@@ -9,9 +9,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class VirtualCoinDto {
-    private String dni;
+public class VirtualCoinTransactionDto {
     private String cellNumber;
-    private String IMEI ;
-    private String email;
+    private Double mount;
 }

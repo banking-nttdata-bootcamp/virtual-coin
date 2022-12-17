@@ -2,11 +2,14 @@ package com.nttdata.bootcamp.service.impl;
 
 import com.nttdata.bootcamp.entity.VirtualCoin;
 import com.nttdata.bootcamp.repository.VirtualCoinRepository;
+import com.nttdata.bootcamp.service.KafkaService;
 import com.nttdata.bootcamp.service.VirtualCoinService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Date;
 
 //Service implementation
 @Service
@@ -15,6 +18,9 @@ public class VirtualCoinServiceImpl implements VirtualCoinService {
     @Autowired
     private VirtualCoinRepository virtualCoinRepository;
 
+    @Autowired
+    private KafkaService kafkaService;
+
     @Override
     public Flux<VirtualCoin> findAllVirtualCoin() {
         Flux<VirtualCoin> virtualCoinFlux = virtualCoinRepository
@@ -22,10 +28,10 @@ public class VirtualCoinServiceImpl implements VirtualCoinService {
         return virtualCoinFlux;
     }
     @Override
-    public Mono<VirtualCoin> findAllVirtualCoinByCustomer(String dni) {
+    public Mono<VirtualCoin> findVirtualCoinByCellNumber(String cellNumber) {
         Mono<VirtualCoin> virtualCoinFlux = virtualCoinRepository
                 .findAll()
-                .filter(x -> x.getDni().equals(dni)).next();
+                .filter(x -> x.getCellNumber().equals(cellNumber) && x.getTypeOperation().equals("REGISTER") ).next();
         return virtualCoinFlux;
     }
 
@@ -36,27 +42,23 @@ public class VirtualCoinServiceImpl implements VirtualCoinService {
     public Mono<VirtualCoin> saveVirtualCoin(VirtualCoin dataVirtualCoin) {
         Mono<VirtualCoin> virtualCoinMono = Mono.empty();
 
-        virtualCoinMono = findAllVirtualCoinByCustomer(dataVirtualCoin.getDni())
-                .flatMap(__ -> Mono.<VirtualCoin>error(new Error("The customer don have virtual coin")))
+        virtualCoinMono = findVirtualCoinByCellNumber(dataVirtualCoin.getCellNumber())
+                .flatMap(__ -> Mono.<VirtualCoin>error(new Error("The cell number do not have virtual coin")))
                 .switchIfEmpty(virtualCoinRepository.save(dataVirtualCoin));
         return virtualCoinMono;
 
     }
-    //change main account of the debit card
+
     @Override
-    public Mono<VirtualCoin> updateBalanceVirtualCoin(VirtualCoin dataVirtualCoin) {
-        Mono<VirtualCoin> virtualCoinMono = findAllVirtualCoinByCustomer(dataVirtualCoin.getDni());
-        try{
-            VirtualCoin virtualCoin = virtualCoinMono.block();
-            virtualCoin.setBalance(dataVirtualCoin.getBalance());
-            virtualCoin.setModificationDate(dataVirtualCoin.getModificationDate());
-            return virtualCoinRepository.save(virtualCoin);
-        }catch (Exception e){
-            return Mono.<VirtualCoin>error(new Error("The virtual coin " + dataVirtualCoin.getDni() + " does not exists"));
-        }
-    }@Override
+    public Mono<VirtualCoin> saveTransactionVirtualCoin(VirtualCoin dataVirtualCoin) {
+        return saveTopic(dataVirtualCoin);
+
+    }
+
+    //change main account of the debit card
+   @Override
     public Mono<VirtualCoin> updateDebiCardVirtualCoin(VirtualCoin dataVirtualCoin) {
-        Mono<VirtualCoin> virtualCoinMono = findAllVirtualCoinByCustomer(dataVirtualCoin.getDni());
+        Mono<VirtualCoin> virtualCoinMono = findVirtualCoinByCellNumber(dataVirtualCoin.getCellNumber());
         try{
             VirtualCoin virtualCoin = virtualCoinMono.block();
             virtualCoin.setFlagDebitCard(dataVirtualCoin.getFlagDebitCard());
@@ -66,6 +68,12 @@ public class VirtualCoinServiceImpl implements VirtualCoinService {
         }catch (Exception e){
             return Mono.<VirtualCoin>error(new Error("The virtual coin " + dataVirtualCoin.getDni() + " does not exists"));
         }
+    }
+
+    public Mono<VirtualCoin> saveTopic(VirtualCoin datavirtual){
+        Mono<VirtualCoin> monoVirtual = virtualCoinRepository.save(datavirtual);
+        this.kafkaService.publish(monoVirtual.block());
+        return monoVirtual;
     }
 
 

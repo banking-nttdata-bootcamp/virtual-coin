@@ -25,9 +25,11 @@ public class VirtualCoin {
     private String cellNumber;
     private String IMEI ;
     private String email;
-    private Double balance;
     private Boolean flagDebitCard;
     private String numberDebitCard;
+    private String typeOperation;
+    private Double mount;
+
 
 
     @JsonFormat(pattern = "yyyy-MM-dd")

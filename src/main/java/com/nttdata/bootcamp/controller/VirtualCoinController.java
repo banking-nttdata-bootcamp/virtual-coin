@@ -1,6 +1,7 @@
 package com.nttdata.bootcamp.controller;
 
 import com.nttdata.bootcamp.entity.VirtualCoin;
+import com.nttdata.bootcamp.entity.dto.VirtualCoinTransactionDto;
 import com.nttdata.bootcamp.util.Constant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,10 +32,10 @@ public class VirtualCoinController {
 
 	//Virtual-coin registered  by customer
 
-	@GetMapping("/findAllDebitCardsByCustomer/{dni}")
-	public Mono<VirtualCoin> findAllVirtualCoinByCustomer(@PathVariable("dni") String dni) {
-		Mono<VirtualCoin> virtualCoinMono = virtualCoinService.findAllVirtualCoinByCustomer(dni);
-		LOGGER.info("Virtual coin Registered by customer "+dni+": " + virtualCoinMono);
+	@GetMapping("/findVirtualCoinByCellNumber/{dni}")
+	public Mono<VirtualCoin> findVirtualCoinByCellNumber(@PathVariable("cellNumber") String cellNumber) {
+		Mono<VirtualCoin> virtualCoinMono = virtualCoinService.findVirtualCoinByCellNumber(cellNumber);
+		LOGGER.info("Virtual coin Registered by cell number "+cellNumber+": " + virtualCoinMono);
 		return virtualCoinMono;
 	}
 
@@ -49,7 +50,10 @@ public class VirtualCoinController {
 			t.setEmail(virtualCoinDto.getEmail());
 			t.setCellNumber(virtualCoinDto.getCellNumber());
 			t.setIMEI(virtualCoinDto.getIMEI());
-			t.setBalance(virtualCoinDto.getBalance());
+			t.setMount(0.00);
+			t.setFlagDebitCard(false);
+			t.setNumberDebitCard("");
+			t.setTypeOperation("REGISTER");
 			t.setCreationDate(new Date());
 			t.setModificationDate(new Date());
 		}).onErrorReturn(virtualCoin).onErrorResume(e -> Mono.just(virtualCoin))
@@ -59,22 +63,42 @@ public class VirtualCoinController {
 		return passiveMono;
 	}
 
+	@PostMapping(value = "/sendPayment")
+	public Mono<VirtualCoin> sendPayment(@RequestBody VirtualCoinTransactionDto transactionDto){
+		Mono<VirtualCoin> virtualCoinMono = virtualCoinService.findVirtualCoinByCellNumber(transactionDto.getCellNumber());
+		VirtualCoin virtualCoin = new VirtualCoin();
+		Mono.just(virtualCoin).doOnNext(t -> {
+					t.setDni(virtualCoinMono.block().getDni());
+					t.setCellNumber(transactionDto.getCellNumber());
+					t.setMount(transactionDto.getMount()*-1);
+					t.setFlagDebitCard(virtualCoinMono.block().getFlagDebitCard());
+					t.setNumberDebitCard(virtualCoinMono.block().getNumberDebitCard());
 
-	//Update balance of the Virtual-coin
-	@PutMapping("/updateBalanceVirtualCoin/{dni}/{balance}")
-	public Mono<VirtualCoin> updateBalanceVirtualCoin(@PathVariable("dni") String dni, @PathVariable("balance") Double balance){
-
-		VirtualCoin dataVirtualCoin = new VirtualCoin();
-		Mono.just(dataVirtualCoin).doOnNext(t -> {
-					t.setDni(dni);
-					t.setBalance(balance);
-					t.setModificationDate(new Date());
-		}).onErrorReturn(dataVirtualCoin).onErrorResume(e -> Mono.just(dataVirtualCoin))
+				}).onErrorReturn(virtualCoin).onErrorResume(e -> Mono.just(virtualCoin))
 				.onErrorMap(f -> new InterruptedException(f.getMessage())).subscribe(x -> LOGGER.info(x.toString()));
 
-		Mono<VirtualCoin> updatePassive = virtualCoinService.updateBalanceVirtualCoin(dataVirtualCoin);
-		return updatePassive;
+		Mono<VirtualCoin> passiveMono = virtualCoinService.saveTransactionVirtualCoin(virtualCoin);
+		return passiveMono;
 	}
+	@PostMapping(value = "/getPaid")
+	public Mono<VirtualCoin> getPaid(@RequestBody VirtualCoinTransactionDto transactionDto){
+		Mono<VirtualCoin> virtualCoinMono = virtualCoinService.findVirtualCoinByCellNumber(transactionDto.getCellNumber());
+		VirtualCoin virtualCoin = new VirtualCoin();
+		Mono.just(virtualCoin).doOnNext(t -> {
+					t.setDni(virtualCoinMono.block().getDni());
+					t.setCellNumber(transactionDto.getCellNumber());
+					t.setMount(transactionDto.getMount());
+					t.setFlagDebitCard(virtualCoinMono.block().getFlagDebitCard());
+					t.setNumberDebitCard(virtualCoinMono.block().getNumberDebitCard());
+
+				}).onErrorReturn(virtualCoin).onErrorResume(e -> Mono.just(virtualCoin))
+				.onErrorMap(f -> new InterruptedException(f.getMessage())).subscribe(x -> LOGGER.info(x.toString()));
+
+		Mono<VirtualCoin> passiveMono = virtualCoinService.saveTransactionVirtualCoin(virtualCoin);
+		return passiveMono;
+	}
+
+
 	// update debit card of then Virtual-coin
 	@PutMapping("/updateDebiCardVirtualCoin/{dni}")
 	public Mono<VirtualCoin> updateDebiCardVirtualCoin(@PathVariable("dni") String dni){
