@@ -73,6 +73,7 @@ public class VirtualCoinController {
 					t.setMount(transactionDto.getMount()*-1);
 					t.setFlagDebitCard(virtualCoinMono.block().getFlagDebitCard());
 					t.setNumberDebitCard(virtualCoinMono.block().getNumberDebitCard());
+					t.setTypeOperation("SEND");
 
 				}).onErrorReturn(virtualCoin).onErrorResume(e -> Mono.just(virtualCoin))
 				.onErrorMap(f -> new InterruptedException(f.getMessage())).subscribe(x -> LOGGER.info(x.toString()));
@@ -90,6 +91,7 @@ public class VirtualCoinController {
 					t.setMount(transactionDto.getMount());
 					t.setFlagDebitCard(virtualCoinMono.block().getFlagDebitCard());
 					t.setNumberDebitCard(virtualCoinMono.block().getNumberDebitCard());
+					t.setTypeOperation("GET");
 
 				}).onErrorReturn(virtualCoin).onErrorResume(e -> Mono.just(virtualCoin))
 				.onErrorMap(f -> new InterruptedException(f.getMessage())).subscribe(x -> LOGGER.info(x.toString()));
@@ -101,19 +103,15 @@ public class VirtualCoinController {
 
 	// update debit card of then Virtual-coin
 	@PutMapping("/updateDebiCardVirtualCoin/{dni}")
-	public Mono<VirtualCoin> updateDebiCardVirtualCoin(@PathVariable("dni") String dni){
-		Boolean flagdebitcard= true;
-		String debicard= "";
+	public Mono<VirtualCoin> updateDebiCardVirtualCoin(@PathVariable("cellNumber") String cellNumber,
+													   @PathVariable("debicard") String debitcard,
+													   @PathVariable("numberAccount") String numberAccount){
 		VirtualCoin dataVirtualCoin = new VirtualCoin();
 		Mono.just(dataVirtualCoin).doOnNext(t -> {
-					t.setDni(dni);
-					if(flagdebitcard) {
-						t.setFlagDebitCard(true);
-						t.setNumberDebitCard(debicard);
-					}else{
-						t.setFlagDebitCard(false);
-						t.setNumberDebitCard("");
-					}
+					t.setCellNumber(cellNumber);
+					t.setFlagDebitCard(true);
+					t.setNumberDebitCard(debitcard);
+					t.setNumberAccount(numberAccount);
 					t.setModificationDate(new Date());
 				}).onErrorReturn(dataVirtualCoin).onErrorResume(e -> Mono.just(dataVirtualCoin))
 				.onErrorMap(f -> new InterruptedException(f.getMessage())).subscribe(x -> LOGGER.info(x.toString()));

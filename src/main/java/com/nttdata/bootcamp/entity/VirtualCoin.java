@@ -27,6 +27,7 @@ public class VirtualCoin {
     private String email;
     private Boolean flagDebitCard;
     private String numberDebitCard;
+    private String numberAccount;
     private String typeOperation;
     private Double mount;
 
