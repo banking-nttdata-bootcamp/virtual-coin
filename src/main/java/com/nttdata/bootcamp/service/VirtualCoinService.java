@@ -9,6 +9,7 @@ public interface VirtualCoinService {
     Flux<VirtualCoin> findAllVirtualCoin();
     Mono<VirtualCoin> findVirtualCoinByCellNumber(String dni);
 
+    Flux<VirtualCoin>  findVirtualCoinTransactionByCellNumber(String dni);
     Mono<VirtualCoin> saveVirtualCoin(VirtualCoin dataVirtualCoin);
     Mono<VirtualCoin> saveTransactionVirtualCoin(VirtualCoin dataVirtualCoin);
     Mono<VirtualCoin> updateDebiCardVirtualCoin(VirtualCoin dataVirtualCoin);

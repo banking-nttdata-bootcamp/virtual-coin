@@ -35,22 +35,37 @@ public class VirtualCoinServiceImpl implements VirtualCoinService {
         return virtualCoinFlux;
     }
 
+    @Override
+    public Flux<VirtualCoin> findVirtualCoinTransactionByCellNumber(String cellNumber) {
+        Flux<VirtualCoin> virtualCoinFlux = virtualCoinRepository
+                .findAll()
+                .filter(x -> x.getCellNumber().equals(cellNumber) && !x.getTypeOperation().equals("REGISTER") );
+        return virtualCoinFlux;
+    }
+
 
     //save debit card
     //then main account is false by default
     @Override
     public Mono<VirtualCoin> saveVirtualCoin(VirtualCoin dataVirtualCoin) {
-        Mono<VirtualCoin> virtualCoinMono = Mono.empty();
+        /*Mono<VirtualCoin> virtualCoinMono = Mono.empty();
 
         virtualCoinMono = findVirtualCoinByCellNumber(dataVirtualCoin.getCellNumber())
                 .flatMap(__ -> Mono.<VirtualCoin>error(new Error("The cell number do not have virtual coin")))
                 .switchIfEmpty(virtualCoinRepository.save(dataVirtualCoin));
-        return virtualCoinMono;
+        return virtualCoinMono;*/
+        return virtualCoinRepository.save(dataVirtualCoin);
 
     }
 
+
+
     @Override
     public Mono<VirtualCoin> saveTransactionVirtualCoin(VirtualCoin dataVirtualCoin) {
+       /* Mono<VirtualCoin> virtualCoinMono = Mono.empty();
+        return virtualCoinMono
+                .flatMap(__ -> Mono.<VirtualCoin>error(new Error("This deposit number " + dataVirtualCoin.getCellNumber() + "exists")))
+                .switchIfEmpty(saveTopic(dataVirtualCoin));*/
         return saveTopic(dataVirtualCoin);
 
     }
@@ -64,14 +79,15 @@ public class VirtualCoinServiceImpl implements VirtualCoinService {
             virtualCoin.setFlagDebitCard(dataVirtualCoin.getFlagDebitCard());
             virtualCoin.setNumberDebitCard(dataVirtualCoin.getNumberDebitCard());
             virtualCoin.setModificationDate(dataVirtualCoin.getModificationDate());
+            virtualCoin.setNumberAccount(dataVirtualCoin.getNumberAccount());
             return virtualCoinRepository.save(virtualCoin);
         }catch (Exception e){
             return Mono.<VirtualCoin>error(new Error("The virtual coin " + dataVirtualCoin.getDni() + " does not exists"));
         }
     }
 
-    public Mono<VirtualCoin> saveTopic(VirtualCoin datavirtual){
-        Mono<VirtualCoin> monoVirtual = virtualCoinRepository.save(datavirtual);
+    public Mono<VirtualCoin> saveTopic(VirtualCoin dataVirtual){
+        Mono<VirtualCoin> monoVirtual = virtualCoinRepository.save(dataVirtual);
         this.kafkaService.publish(monoVirtual.block());
         return monoVirtual;
     }
