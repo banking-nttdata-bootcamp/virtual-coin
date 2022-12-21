@@ -1,6 +1,7 @@
 package com.nttdata.bootcamp.service.impl;
 
 import com.nttdata.bootcamp.entity.VirtualCoin;
+import com.nttdata.bootcamp.entity.dto.BootCoinDto;
 import com.nttdata.bootcamp.repository.VirtualCoinRepository;
 import com.nttdata.bootcamp.service.KafkaService;
 import com.nttdata.bootcamp.service.VirtualCoinService;
@@ -82,15 +83,25 @@ public class VirtualCoinServiceImpl implements VirtualCoinService {
             virtualCoin.setNumberAccount(dataVirtualCoin.getNumberAccount());
             return virtualCoinRepository.save(virtualCoin);
         }catch (Exception e){
-            return Mono.<VirtualCoin>error(new Error("The virtual coin " + dataVirtualCoin.getDni() + " does not exists"));
+            return Mono.<VirtualCoin>error(new Error("The virtual coin CellNumber: " + dataVirtualCoin.getDni() + " does not exists"));
         }
     }
 
     public Mono<VirtualCoin> saveTopic(VirtualCoin dataVirtual){
         Mono<VirtualCoin> monoVirtual = virtualCoinRepository.save(dataVirtual);
-        this.kafkaService.publish(monoVirtual.block());
+        kafkaService.publish(monoVirtual.block());
         return monoVirtual;
     }
 
+    @Override
+    public Mono<VirtualCoin> saveBootCoin(BootCoinDto bootCoinDto) {
+        Mono<VirtualCoin> virtualCoinMono = findVirtualCoinByCellNumber(bootCoinDto.getCellNumberSend());
+        if(virtualCoinMono.block() != null){
+            kafkaService.publishBootCoin(bootCoinDto);
+            return virtualCoinMono;
+        }else{
+            return Mono.<VirtualCoin>error(new Error("The virtual coin CellNumber: " + bootCoinDto.getCellNumberSend() + " does not exists"));
+        }
+    }
 
 }

@@ -1,6 +1,7 @@
 package com.nttdata.bootcamp.service;
 
 import com.nttdata.bootcamp.entity.VirtualCoin;
+import com.nttdata.bootcamp.entity.dto.BootCoinDto;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -13,5 +14,5 @@ public interface VirtualCoinService {
     Mono<VirtualCoin> saveVirtualCoin(VirtualCoin dataVirtualCoin);
     Mono<VirtualCoin> saveTransactionVirtualCoin(VirtualCoin dataVirtualCoin);
     Mono<VirtualCoin> updateDebiCardVirtualCoin(VirtualCoin dataVirtualCoin);
-
+    Mono<VirtualCoin> saveBootCoin(BootCoinDto bootCoinDto);
 }

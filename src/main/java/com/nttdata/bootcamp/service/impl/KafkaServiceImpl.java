@@ -1,5 +1,7 @@
 package com.nttdata.bootcamp.service.impl;
 
+import com.nttdata.bootcamp.entity.dto.BootCoinDto;
+import com.nttdata.bootcamp.events.BootCoinCreatedEventKafka;
 import com.nttdata.bootcamp.events.VirtualCoinCreatedEventKafka;
 import com.nttdata.bootcamp.entity.VirtualCoin;
 import com.nttdata.bootcamp.entity.enums.EventType;
@@ -22,6 +24,9 @@ public class KafkaServiceImpl implements KafkaService {
     @Value("${topic.virtualCoin.name}")
     private String topicVirtualCoin;
 
+    @Value("${topic.bootCoin.name}")
+    private String topicBootCoin;
+
     public void publish(VirtualCoin deposit) {
 
         VirtualCoinCreatedEventKafka created = new VirtualCoinCreatedEventKafka();
@@ -31,6 +36,17 @@ public class KafkaServiceImpl implements KafkaService {
         created.setDate(new Date());
 
         this.producer.send(topicVirtualCoin, created);
+    }
+
+    public void publishBootCoin(BootCoinDto bootCoinDto) {
+
+        BootCoinCreatedEventKafka created = new BootCoinCreatedEventKafka();
+        created.setData(bootCoinDto);
+        created.setId(UUID.randomUUID().toString());
+        created.setType(EventType.CREATED);
+        created.setDate(new Date());
+
+        this.producer.send(topicBootCoin, created);
     }
 
 }

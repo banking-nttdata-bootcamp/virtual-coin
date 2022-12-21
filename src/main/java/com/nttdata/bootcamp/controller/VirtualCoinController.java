@@ -1,6 +1,7 @@
 package com.nttdata.bootcamp.controller;
 
 import com.nttdata.bootcamp.entity.VirtualCoin;
+import com.nttdata.bootcamp.entity.dto.BootCoinDto;
 import com.nttdata.bootcamp.entity.dto.UpdateVirtualCoinDto;
 import com.nttdata.bootcamp.entity.dto.VirtualCoinTransactionDto;
 import com.nttdata.bootcamp.util.Constant;
@@ -8,11 +9,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.nttdata.bootcamp.service.VirtualCoinService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.util.Date;
 import com.nttdata.bootcamp.entity.dto.VirtualCoinDto;
+import redis.clients.jedis.Transaction;
+
+import javax.swing.text.html.parser.Entity;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -32,7 +37,6 @@ public class VirtualCoinController {
 	}
 
 	//Virtual-coin registered  by customer
-
 	@GetMapping("/findVirtualCoinByCellNumber/{cellNumber}")
 	public Mono<VirtualCoin> findVirtualCoinByCellNumber(@PathVariable("cellNumber") String cellNumber) {
 		Mono<VirtualCoin> virtualCoinMono = virtualCoinService.findVirtualCoinByCellNumber(cellNumber);
@@ -46,6 +50,7 @@ public class VirtualCoinController {
 		LOGGER.info("Virtual coin transaction Registered by cell number "+cellNumber+": " + virtualCoinFlux);
 		return virtualCoinFlux;
 	}
+
 	//Save Virtual-coin
 	@PostMapping(value = "/saveVirtualCoin")
 	public Mono<VirtualCoin> saveVirtualCoin(@RequestBody VirtualCoinDto virtualCoinDto){
@@ -69,6 +74,7 @@ public class VirtualCoinController {
 		Mono<VirtualCoin> passiveMono = virtualCoinService.saveVirtualCoin(virtualCoin);
 		return passiveMono;
 	}
+
 	// save the send of a payment
 	@PostMapping(value = "/sendPayment")
 	public Mono<VirtualCoin> sendPayment(@RequestBody VirtualCoinTransactionDto transactionDto){
@@ -93,6 +99,7 @@ public class VirtualCoinController {
 		Mono<VirtualCoin> passiveMono = virtualCoinService.saveTransactionVirtualCoin(virtualCoin);
 		return passiveMono;
 	}
+
 	//save get of a paid
 	@PostMapping(value = "/getPaid")
 	public Mono<VirtualCoin> getPaid(@RequestBody VirtualCoinTransactionDto transactionDto){
@@ -118,7 +125,6 @@ public class VirtualCoinController {
 		return passiveMono;
 	}
 
-
 	// update debit card of then Virtual-coin
 	@PutMapping("/updateDebiCardVirtualCoin")
 	public Mono<VirtualCoin> updateDebiCardVirtualCoin(@RequestBody UpdateVirtualCoinDto virtualCoinDto){
@@ -134,6 +140,11 @@ public class VirtualCoinController {
 
 		Mono<VirtualCoin> updatePassive = virtualCoinService.updateDebiCardVirtualCoin(dataVirtualCoin);
 		return updatePassive;
+	}
+
+	@PostMapping(value = "/saveBootCoin")
+	public Mono<VirtualCoin> saveTransactionBootCoin(@RequestBody BootCoinDto bootCoinDto){
+		return virtualCoinService.saveBootCoin(bootCoinDto);
 	}
 
 

@@ -16,7 +16,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-    @Document(collection = "virtual-coin")
+@Document(collection = "virtual-coin")
 public class VirtualCoin {
     @Id
     private String id;
